@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password
 
 class Usuario(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)
@@ -13,6 +14,16 @@ class Usuario(models.Model):
         db_table = 'usuario'
         managed = False
 
+    def __str__(self):
+        return self.nome
+    
+    def set_password(self, password):
+        """Set the user's password."""
+        self.senha = make_password(password)
+
+    def check_password(self, password):
+        return check_password(password, self.senha)
+
 class Cliente(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)
     nome = models.CharField(db_column='NOME', max_length=50)
@@ -23,6 +34,8 @@ class Cliente(models.Model):
         db_table = 'cliente'
         managed = False
 
+    def __str__(self):
+        return self.nome
 
 class Evento(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)
@@ -34,6 +47,8 @@ class Evento(models.Model):
         db_table = 'evento'
         managed = False
 
+    def __str__(self):
+        return self.nome
 
 class Setor(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)
@@ -45,6 +60,9 @@ class Setor(models.Model):
         db_table = 'setor'
         managed = False
 
+    def __str__(self):
+        return self.nome
+
 class Cadeira(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)
     status = models.CharField(db_column='STATUS', max_length=9)
@@ -52,12 +70,23 @@ class Cadeira(models.Model):
     class Meta:
         db_table = 'cadeira'
         managed = False
+    
+    def __str__(self):
+        return self.status
 
 
 class SetorCliente(models.Model):
-    id_setor = models.ForeignKey(Setor, db_column='ID_SETOR', on_delete=models.CASCADE, blank=True, null=True)
-    id_cliente = models.ForeignKey(Cliente, db_column='ID_CLIENTE', on_delete=models.CASCADE, blank=True, null=True)
+    id = models.AutoField(db_column='ID', primary_key=True)  # Campo 'id' com valor automático
+    id_setor = models.ForeignKey(
+        Setor, db_column='ID_SETOR', on_delete=models.CASCADE, blank=True, null=True
+    )
+    id_cliente = models.ForeignKey(
+        Cliente, db_column='ID_CLIENTE', on_delete=models.CASCADE, blank=True, null=True
+    )
 
     class Meta:
         db_table = 'setor_cliente'
         managed = False
+
+    def __str__(self):
+        return f'{self.id_setor} - {self.id_cliente}'
