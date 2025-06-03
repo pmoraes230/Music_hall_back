@@ -16,14 +16,6 @@ class Usuario(models.Model):
 
     def __str__(self):
         return self.nome
-    
-    def set_password(self, password):
-        """Set the user's password."""
-        self.senha = make_password(password)
-
-    def check_password(self, password):
-        return check_password(password, self.senha)
-
 class Cliente(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)
     nome = models.CharField(db_column='NOME', max_length=50)

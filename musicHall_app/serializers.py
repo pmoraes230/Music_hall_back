@@ -5,6 +5,22 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Usuario
         fields = ['id', 'nome', 'e_mail', 'senha', 'perfil', 'cpf', 'login']
+        extra_kwargs = {
+            'senha': {'write_only': True},  # A senha será apenas para escrita
+        }
+
+    def create(self, validated_data):
+        # Cria um novo usuário
+        usuario = models.Usuario(
+            nome=validated_data['nome'],
+            e_mail=validated_data['e_mail'],
+            perfil=validated_data['perfil'],
+            cpf=validated_data['cpf'],
+            login=validated_data['login'],
+        )
+        usuario.senha = validated_data['senha']  # Define a senha diretamente
+        usuario.save()
+        return usuario
 
 class ClienteSerializer(serializers.ModelSerializer):
     class Meta:
