@@ -6,36 +6,54 @@ from . import models, serializers
 
 # Create your views here.
 
-from django.contrib.auth.hashers import make_password
-
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = models.Usuario.objects.all()
     serializer_class = serializers.UsuarioSerializer
 
-    def create(self, request, *args, **kwargs):
-        # Obtém os dados do request
-        data = request.data
+    @action(detail=False, methods=['post'], permission_classes=[])
+    def login(self, request):
+        login = request.data.get('username')
+        password = request.data.get('password')
 
-        # Verifica se os campos obrigatórios estão presentes
-        if 'username' not in data or 'password' not in data:
+        if not login or not password:
             return Response(
-                {'message': 'Username e password são obrigatórios.'},
+                {'message': 'Login e senha são obrigatórios.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Criptografa a senha antes de salvar
-        data['password'] = make_password(data['password'])
+        try:
+            # Busca o usuário pelo login
+            usuario = models.Usuario.objects.get(login=login)
+        except models.Usuario.DoesNotExist:
+            return Response(
+                {'message': 'Usuário não encontrado.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        # Cria o usuário usando o serializer
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
-        # Retorna a resposta com os dados do usuário criado
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
-        )
+        # Compara a senha diretamente (texto plano, conforme solicitado)
+        if usuario.senha == password:
+            try:
+                # Tenta obter o token existente para o user_id
+                token = Token.objects.filter(user_id=usuario.id).first()
+                if not token:
+                    # Cria um novo token apenas se não existir
+                    token = Token.objects.create(user_id=usuario.id)
+                    token.key = Token.generate_key()
+                    token.save()
+                return Response(
+                    {'token': token.key, 'message': 'Login realizado com sucesso!'},
+                    status=status.HTTP_200_OK
+                )
+            except Exception as e:
+                return Response(
+                    {'message': f'Erro ao gerar token: {str(e)}'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+        else:
+            return Response(
+                {'message': 'Senha incorreta.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
     
 class ClienteViewSet(viewsets.ModelViewSet):
     queryset = models.Clientes.objects.all()
