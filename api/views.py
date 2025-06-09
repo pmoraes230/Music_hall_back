@@ -3,8 +3,43 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from . import models, serializers
+from rest_framework.views import APIView
 
 # Create your views here.
+
+class EventoDetalhesAPIView(APIView):
+    def get(self, request, evento_id):
+        try:
+            # Obter o evento
+            evento = models.Evento.objects.get(id=evento_id)
+            setores = models.Setores.objects.filter(id_evento=evento_id)
+
+            # Montar a resposta com informações do evento e setores
+            response_data = {
+                'evento': {
+                    'id': evento.id,
+                    'nome': evento.nome,
+                    'capacidade_pessoas': evento.capacidade_pessoas,
+                    'data_evento': evento.data_evento,
+                    'horario': evento.horario,
+                    'descricao': evento.descricao,
+                },
+                'setores': [
+                    {
+                        'id': setor.id,
+                        'nome': setor.nome,
+                        'qtd_cadeira': setor.qtd_cadeira,
+                        'cadeiras': [
+                            {'id': cadeira.id, 'status': cadeira.status}
+                            for cadeira in models.Cadeiras.objects.filter(id_setor=setor.id)
+                        ]
+                    }
+                    for setor in setores
+                ]
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+        except models.Evento.DoesNotExist:
+            return Response({'message': 'Evento não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = models.Usuario.objects.all()
@@ -40,8 +75,11 @@ class UsuarioViewSet(viewsets.ModelViewSet):
                     token = Token.objects.create(user_id=usuario.id)
                     token.key = Token.generate_key()
                     token.save()
-                return Response(
-                    {'token': token.key, 'message': 'Login realizado com sucesso!'},
+                return Response({
+                    'token': token.key,
+                    'user_id': usuario.id,
+                    'message': 'Login realizado com sucesso!'
+                    },
                     status=status.HTTP_200_OK
                 )
             except Exception as e:

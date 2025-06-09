@@ -9,7 +9,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 class ClientesSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Clientes
-        fields = ['id', 'nome', 'e_mail', 'cpf']
+        fields = '__all__'
         
 class EventoSerializer(serializers.ModelSerializer):
     class Meta:

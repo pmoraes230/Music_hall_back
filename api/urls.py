@@ -1,4 +1,6 @@
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 from rest_framework import routers
 
@@ -12,5 +14,6 @@ router.register(r'perfil', views.PerfilViewSet)
 router.register(r'clientes_eventos', views.ClienteEventoViewSet)
 
 urlpatterns = [
-    path('', include(router.urls))
-]
+    path('', include(router.urls)),
+    path('evento/<int:evento_id>/', views.EventoDetalhesAPIView.as_view(), name='evento-detalhes'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
