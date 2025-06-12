@@ -9,15 +9,16 @@ from django.db import models
 
 class Cadeiras(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
-    status = models.CharField(db_column='STATUS', max_length=10)  # Field name made lowercase.
+    status = models.CharField(db_column='STATUS', max_length=10, choices=[('available', 'Disponivel'), ('reserved', 'Reservado')], default='available')  # Field name made lowercase.
     id_setor = models.ForeignKey('Setores', db_column='ID_SETOR', on_delete=models.CASCADE, blank=True, null=True)  # Field name made lowercase.
+    row = models.CharField(max_length=2, blank=True)
+    column = models.CharField(max_length=3, blank=True)
 
     class Meta:
-        managed = False
         db_table = 'cadeiras'
         
     def __str__(self):
-        return self.status
+        return f'{self.id_setor.nome} - {self.row}{self.column} ({self.status})'
 
 class Clientes(models.Model):
     id = models.AutoField(db_column='ID', primary_key=True)  # Field name made lowercase.
@@ -91,7 +92,7 @@ class Usuario(models.Model):
     nome = models.CharField(db_column='NOME', max_length=50)  # Field name made lowercase.
     login = models.CharField(db_column='LOGIN', max_length=50)  # Field name made lowercase.
     e_mail = models.CharField(db_column='E_MAIL', max_length=50)  # Field name made lowercase.
-    senha = models.CharField(db_column='SENHA', max_length=350)  # Field name made lowercase.
+    senha = models.CharField(db_column='SENHA', max_length=350,  null=False)  # Field name made lowercase.
     cpf = models.CharField(db_column='CPF', max_length=14)  # Field name made lowercase.
     id_perfil = models.ForeignKey('Perfil', db_column='ID_PERFIL', on_delete=models.CASCADE, blank=True, null=True)  # Field name made lowercase.
 

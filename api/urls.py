@@ -15,5 +15,4 @@ router.register(r'clientes_eventos', views.ClienteEventoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('evento/<int:evento_id>/', views.EventoDetalhesAPIView.as_view(), name='evento-detalhes'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
